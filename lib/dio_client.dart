@@ -1,38 +1,46 @@
 import 'package:dio/dio.dart';
-// import 'networkData.dart';
 import 'package:latihan_dio/dio_interceptor.dart';
+
+import '../../../../dio_client.dart';
+import '/src/features/home/domain/user.dart';
 
 enum RequestType { GET, POST, PUT, PATCH, DELETE }
 
-class Api {
+class DioClient {
   final dio = createDio();
 
-  Api._internal();
+  DioClient._internal();
 
-  static final _singleton = Api._internal();
+  static final _singleton = DioClient._internal();
 
-  factory Api() => _singleton;
+  factory DioClient() => _singleton;
 
   static Dio createDio() {
     var dio = Dio(BaseOptions(
-      baseUrl: "https:://api.call",
+      baseUrl: "https://reqres.in/api/users?page=2",
       receiveTimeout: 20000, // 20 seconds
       connectTimeout: 20000,
       sendTimeout: 20000,
     ));
 
-    dio.interceptors.addAll({
-      AuthInterceptor(dio),
-    });
-    dio.interceptors.addAll({
-      Logging(dio),
-    });
+    // dio.interceptors.addAll({
+    //   AuthInterceptor(dio),
+    // });
+    // dio.interceptors.addAll({
+    //   Logging(dio),
+    // });
 
     return dio;
   }
 
-  Future<Response?> apiCall(String url, Map<String, dynamic>? queryParameters,
-      Map<String, dynamic>? body, RequestType requestType) async {
+  Future<Response<dynamic>> apiCall({
+    required String url,
+    required RequestType requestType,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? body,
+    Map<String, String>? header,
+    RequestOptions? requestOptions,
+  }) async {
     late Response result;
     // try {
     switch (requestType) {
@@ -54,6 +62,18 @@ class Api {
           Options options = Options(headers: header);
           result =
               await dio.delete(url, data: queryParameters, options: options);
+          break;
+        }
+      case RequestType.PUT:
+        {
+          Options options = Options(headers: header);
+          result = await dio.put(url, data: body, options: options);
+          break;
+        }
+      case RequestType.PATCH:
+        {
+          Options options = Options(headers: header);
+          result = await dio.patch(url, data: body, options: options);
           break;
         }
     }
